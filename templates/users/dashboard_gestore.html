@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard Gestore - Hotel Bidding{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">📊 Dashboard Gestore</h1>
+
+<p class="lead">Ecco tutti i preventivi ricevuti per i tuoi hotel:</p>
+
+{% if preventivi %}
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Richiesta</th>
+                    <th>Hotel</th>
+                    <th>Cliente</th>
+                    <th>Prezzo Offerto</th>
+                    <th>Stato</th>
+                    <th>Data Creazione</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in preventivi %}
+                    <tr>
+                        <td>#{{ p.pk }}</td>
+                        <td>
+                            {{ p.richiesta.destinazione }}<br>
+                            <small class="text-muted">{{ p.richiesta.data_inizio }} → {{ p.richiesta.data_fine }}</small>
+                        </td>
+                        <td>{{ p.hotel.nome }}</td>
+                        <td>{{ p.richiesta.cliente.user.username }}</td>
+                        <td><strong>€{{ p.prezzo_offerto }}</strong></td>
+                        <td>
+                            {% if p.stato == 'ATTESA' %}
+                                <span class="badge bg-warning text-dark">{{ p.get_stato_display }}</span>
+                            {% elif p.stato == 'ACCETTATO' %}
+                                <span class="badge bg-success">{{ p.get_stato_display }}</span>
+                            {% elif p.stato == 'RIFIUTATO' or p.stato == 'SCADUTO' %}
+                                <span class="badge bg-danger">{{ p.get_stato_display }}</span>
+                            {% elif p.stato == 'IN_PAGAMENTO' %}
+                                <span class="badge bg-info">{{ p.get_stato_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ p.timestamp_creazione|date:"d/m/Y H:i" }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <div class="alert alert-info">
+        Nessun preventivo ricevuto. Quando un cliente ti invierà una richiesta, comparirà qui.
+    </div>
+{% endif %}
+{% endblock %}

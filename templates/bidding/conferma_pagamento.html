@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block title %}Conferma Pagamento - Hotel Bidding{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header bg-success text-white">
+                <h3 class="mb-0">💳 Riepilogo Pagamento</h3>
+            </div>
+            <div class="card-body">
+                <h5>Dettagli Preventivo</h5>
+                <table class="table">
+                    <tr>
+                        <th>Hotel:</th>
+                        <td>{{ preventivo.hotel.nome }}</td>
+                    </tr>
+                    <tr>
+                        <th>Città:</th>
+                        <td>{{ preventivo.hotel.citta }}</td>
+                    </tr>
+                    <tr>
+                        <th>Date soggiorno:</th>
+                        <td>{{ preventivo.richiesta.data_checkin|date:"d/m/Y" }} → {{ preventivo.richiesta.data_checkout|date:"d/m/Y" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Ospiti:</th>
+                        <td>{{ preventivo.richiesta.capienza_richiesta }}</td>
+                    </tr>
+                    {% if preventivo.camera_assegnata %}
+                    <tr>
+                        <th>Camera assegnata:</th>
+                        <td>{{ preventivo.camera_assegnata.nome }} (x{{ preventivo.camera_assegnata.capienza }})</td>
+                    </tr>
+                    {% endif %}
+                    <tr>
+                        <th>Prezzo proposto:</th>
+                        <td><strong class="text-success fs-4">€{{ preventivo.prezzo_proposto }}</strong></td>
+                    </tr>
+                    <tr>
+                        <th>Stato attuale:</th>
+                        <td><span class="badge bg-info">{{ preventivo.get_stato_display }}</span></td>
+                    </tr>
+                    {% if preventivo.messaggio_gestore %}
+                    <tr>
+                        <th>Messaggio gestore:</th>
+                        <td><em>"{{ preventivo.messaggio_gestore }}"</em></td>
+                    </tr>
+                    {% endif %}
+                </table>
+
+                <hr>
+
+                <p class="text-muted">
+                    <small>Simulazione pagamento: genererà un riferimento casuale e il preventivo sarà accettato definitivamente.</small>
+                </p>
+
+                <form method="post" class="d-grid gap-2">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success btn-lg">
+                        ✅ Conferma Pagamento
+                    </button>
+                    <a href="{% url 'bidding:dashboard_cliente' %}" class="btn btn-outline-secondary">
+                        ❌ Annulla
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

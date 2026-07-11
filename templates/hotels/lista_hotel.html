@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}Hotel - Hotel Bidding{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">🏨 Hotel disponibili</h1>
+
+{% if hotels %}
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        {% for hotel in hotels %}
+            <div class="col">
+                <div class="card h-100 shadow-sm">
+                    {% if hotel.foto %}
+                        <img src="{{ hotel.foto.url }}" class="card-img-top" alt="{{ hotel.nome }}" style="height: 200px; object-fit: cover;">
+                    {% else %}
+                        <div class="bg-secondary text-white text-center d-flex align-items-center justify-content-center" style="height: 200px;">
+                            <span class="fs-4">🏨 Nessuna foto</span>
+                        </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ hotel.nome }}</h5>
+                        <p class="card-text text-muted">
+                            📍 {{ hotel.citta }}<br>
+                            ⭐ {{ hotel.stelle }} / 5
+                        </p>
+                        <a href="{% url 'hotels:dettaglio_hotel' hotel.pk %}" class="btn btn-primary">
+                            Vedi dettagli
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="alert alert-info">
+        Nessun hotel disponibile al momento.
+    </div>
+{% endif %}
+{% endblock %}

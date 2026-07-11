@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}I miei hotel — Hotel Bidding{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>🏨 I miei hotel</h1>
+    <a href="{% url 'hotels:crea_hotel' %}" class="btn btn-primary">➕ Nuovo hotel</a>
+</div>
+
+{% if hotels %}
+    <div class="row">
+        {% for hotel in hotels %}
+        <div class="col-md-6 mb-3">
+            <div class="card h-100 shadow-sm">
+                {% if hotel.foto %}
+                <img src="{{ hotel.foto.url }}" class="card-img-top" alt="{{ hotel.nome }}" style="max-height: 180px; object-fit: cover;">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ hotel.nome }}</h5>
+                    <p class="card-text">
+                        ⭐ {{ hotel.stelle }} · 📍 {{ hotel.citta }}<br>
+                        <small class="text-muted">Camere: {{ hotel.camere.count }}</small>
+                    </p>
+                    <div class="d-flex gap-1 flex-wrap">
+                        <a href="{% url 'hotels:modifica_hotel' hotel.pk %}" class="btn btn-outline-primary btn-sm">✏️ Modifica</a>
+                        <a href="{% url 'hotels:gestisci_camere' hotel.pk %}" class="btn btn-outline-secondary btn-sm">🛏️ Camere</a>
+                        <a href="{% url 'hotels:gestisci_servizi' hotel.pk %}" class="btn btn-outline-info btn-sm">🔧 Servizi</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="alert alert-info">
+        Non hai ancora registrato nessuna struttura.
+        <a href="{% url 'hotels:crea_hotel' %}" class="alert-link">Aggiungi il tuo primo hotel</a>.
+    </div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Invia Preventivo — Hotel Bidding{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <h1 class="mb-3">✉️ Invia preventivo</h1>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <strong>Richiesta da {{ richiesta.cliente.user.get_full_name|default:richiesta.cliente.user.username }}</strong>
+            </div>
+            <div class="card-body">
+                <p>
+                    <strong>Date:</strong> {{ richiesta.data_checkin|date:"d/m/Y" }} → {{ richiesta.data_checkout|date:"d/m/Y" }}<br>
+                    <strong>Ospiti:</strong> {{ richiesta.capienza_richiesta }}
+                    {% if richiesta.budget_massimo %}<br><strong>Budget max:</strong> €{{ richiesta.budget_massimo }}/notte{% endif %}
+                </p>
+                {% if richiesta.messaggio_cliente %}
+                <div class="alert alert-light border">
+                    <strong>Messaggio del cliente:</strong>
+                    <p class="mb-0 fst-italic">"{{ richiesta.messaggio_cliente }}"</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Dettagli offerta</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    <button type="submit" class="btn btn-success btn-lg w-100 mt-3">Invia Preventivo</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const prezzi = {{ prezzi_suggeriti|safe|default:"{}" }};
+    const selectHotel = document.getElementById('id_hotel');
+    const inputPrezzo = document.getElementById('id_prezzo_proposto');
+
+    function aggiornaPrezzo() {
+        const hotelId = selectHotel.value;
+        if (prezzi[hotelId]) {
+            inputPrezzo.placeholder = 'Suggerito: €' + prezzi[hotelId];
+            if (!inputPrezzo.value) {
+                inputPrezzo.value = prezzi[hotelId];
+            }
+        } else {
+            inputPrezzo.placeholder = 'Inserisci prezzo';
+        }
+    }
+
+    if (selectHotel) {
+        selectHotel.addEventListener('change', aggiornaPrezzo);
+        aggiornaPrezzo();
+    }
+</script>
+{% endblock %}

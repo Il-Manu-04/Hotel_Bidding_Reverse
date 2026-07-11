@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Login — Hotel Bidding{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header bg-dark text-white">
+                <h3 class="mb-0">🔑 Accedi</h3>
+            </div>
+            <div class="card-body">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    <button type="submit" class="btn btn-primary w-100 mt-3">Accedi</button>
+                </form>
+            </div>
+            <div class="card-footer text-center">
+                <a href="{% url 'home' %}" class="text-muted">← Torna alla home</a>
+                <span class="mx-2">|</span>
+                <a href="{% url 'users:registra_cliente' %}">Registrati come Cliente</a>
+                <span class="mx-2">|</span>
+                <a href="{% url 'users:registra_gestore' %}">Registrati come Gestore</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

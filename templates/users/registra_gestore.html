@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Registrazione Gestore - Hotel Bidding{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0">Registrazione Gestore</h3>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data" novalidate>
+                    {% csrf_token %}
+
+                    <h5 class="mb-3">Dati Account</h5>
+                    <div class="row">
+                        <div class="col-md-6">{{ form.username|as_crispy_field }}</div>
+                        <div class="col-md-6">{{ form.email|as_crispy_field }}</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">{{ form.first_name|as_crispy_field }}</div>
+                        <div class="col-md-6">{{ form.last_name|as_crispy_field }}</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">{{ form.password1|as_crispy_field }}</div>
+                        <div class="col-md-6">{{ form.password2|as_crispy_field }}</div>
+                    </div>
+
+                    <hr>
+
+                    <h5 class="mb-3">Dati Gestore</h5>
+                    <div class="row">
+                        <div class="col-md-6">{{ form.partita_iva|as_crispy_field }}</div>
+                        <div class="col-md-6">{{ form.ragione_sociale|as_crispy_field }}</div>
+                    </div>
+
+                    <hr>
+
+                    <div class="form-check form-switch mb-3">
+                        {{ form.crea_hotel }}
+                        <label class="form-check-label fw-bold" for="{{ form.crea_hotel.id_for_label }}">
+                            Registra anche una struttura
+                        </label>
+                    </div>
+
+                    <div id="sezione-hotel">
+                        <h5 class="mb-3">Dati Hotel</h5>
+                        <div class="row">
+                            <div class="col-md-6">{{ form.nome_hotel|as_crispy_field }}</div>
+                            <div class="col-md-6">{{ form.citta_hotel|as_crispy_field }}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">{{ form.stelle_hotel|as_crispy_field }}</div>
+                            <div class="col-md-6">{{ form.foto_hotel|as_crispy_field }}</div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg">Registrati come Gestore</button>
+                    </div>
+                </form>
+                <hr>
+                <p class="text-center mb-0">
+                    Hai già un account? <a href="{% url 'login' %}">Accedi qui</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const checkbox = document.getElementById('{{ form.crea_hotel.id_for_label }}');
+    const sezione = document.getElementById('sezione-hotel');
+
+    function toggleHotel() {
+        if (checkbox.checked) {
+            sezione.style.display = 'block';
+        } else {
+            sezione.style.display = 'none';
+        }
+    }
+
+    checkbox.addEventListener('change', toggleHotel);
+    toggleHotel();  // stato iniziale
+</script>
+{% endblock %}

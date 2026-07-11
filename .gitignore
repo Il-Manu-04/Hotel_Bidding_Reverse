@@ -1,0 +1,39 @@
+# PYTHON
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# DJANGO
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+
+# AMBIENTI VIRTUALI E PIPENV
+
+venv/
+.venv/
+env/
+ENV/
+
+# FILE DI SISTEMA (Mac/Windows)
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+
+# IDE ED EDITOR DI TESTO
+
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# VARIABILI D'AMBIENTE (Sicurezza)
+.env

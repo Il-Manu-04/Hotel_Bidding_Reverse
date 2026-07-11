@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard Cliente — Hotel Bidding{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>📋 Le tue richieste</h1>
+    <div>
+        {% if archivio %}
+            <a href="?" class="btn btn-outline-primary btn-sm">📋 Attivi</a>
+            <strong class="ms-2 text-muted">📂 Storico</strong>
+        {% else %}
+            <strong class="text-muted">📋 Attivi</strong>
+            <a href="?archivio=1" class="btn btn-outline-secondary btn-sm ms-2">📂 Storico</a>
+        {% endif %}
+        <a href="{% url 'bidding:crea_richiesta' %}" class="btn btn-primary btn-sm ms-2">➕ Nuova richiesta</a>
+    </div>
+</div>
+
+{% if richieste %}
+    {% for richiesta in richieste %}
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <span>
+                    <strong>{{ richiesta.data_checkin|date:"d/m/Y" }} → {{ richiesta.data_checkout|date:"d/m/Y" }}</strong>
+                    · {{ richiesta.capienza_richiesta }} ospit{{ richiesta.capienza_richiesta|pluralize:"e,i" }}
+                    {% if richiesta.budget_massimo %} · max €{{ richiesta.budget_massimo }}/notte{% endif %}
+                </span>
+                <small class="text-muted">
+                    {{ richiesta.data_creazione|date:"d/m/Y H:i" }}
+                    {% if richiesta.scadenza_richiesta %}
+                    · ⏰ Scade: {{ richiesta.scadenza_richiesta|date:"d/m/Y H:i" }}
+                    {% endif %}
+                </small>
+            </div>
+            {% if richiesta.citta_cercata or richiesta.stelle_minime or richiesta.servizi_richiesti.exists %}
+            <div class="mt-1">
+                {% if richiesta.citta_cercata %}<span class="badge bg-secondary me-1">📍 {{ richiesta.citta_cercata }}</span>{% endif %}
+                {% if richiesta.stelle_minime %}<span class="badge bg-secondary me-1">⭐ min. {{ richiesta.stelle_minime }}</span>{% endif %}
+                {% for s in richiesta.servizi_richiesti.all %}<span class="badge bg-info me-1">{{ s.nome }}</span>{% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        <div class="card-body">
+            {% if richiesta.messaggio_cliente %}
+            <p class="fst-italic text-muted">"{{ richiesta.messaggio_cliente|truncatechars:200 }}"</p>
+            {% endif %}
+
+            <h6 class="mt-3">Hotel contattati ({{ richiesta.hotels_contattati.count }})</h6>
+            <ul class="list-unstyled">
+                {% for hotel in richiesta.hotels_contattati.all %}
+                <li>🏨 {{ hotel.nome }} — {{ hotel.citta }} ({{ hotel.stelle }}★)</li>
+                {% endfor %}
+            </ul>
+
+            {% if richiesta.preventivi.exists %}
+            <h6 class="mt-3">Preventivi ricevuti</h6>
+            <div class="table-responsive">
+                <table class="table table-sm align-middle">
+                    <thead>
+                        <tr>
+                            <th>Hotel</th>
+                            <th>Prezzo</th>
+                            <th>Stato</th>
+                            <th>Scadenza</th>
+                            <th>Azioni</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for prev in richiesta.preventivi.all %}
+                        <tr>
+                            <td>{{ prev.hotel.nome }}</td>
+                            <td>€{{ prev.prezzo_proposto }}</td>
+                            <td>
+                                {% if prev.stato == 'ATTESA' %}
+                                    <span class="badge bg-warning text-dark">In attesa</span>
+                                {% elif prev.stato == 'IN_PAGAMENTO' %}
+                                    <span class="badge bg-info">Da pagare</span>
+                                {% elif prev.stato == 'ACCETTATO' %}
+                                    <span class="badge bg-success">Accettato ✅</span>
+                                {% elif prev.stato == 'RIFIUTATO' %}
+                                    <span class="badge bg-danger">Rifiutato</span>
+                                {% elif prev.stato == 'SCADUTO' %}
+                                    <span class="badge bg-secondary">Scaduto</span>
+                                {% elif prev.stato == 'INVALIDATO' %}
+                                    <span class="badge bg-warning">Invalidato</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if prev.scadenza_ts %}
+                                    <span class="countdown" data-scadenza="{{ prev.scadenza_ts }}">--</span>
+                                    <noscript>{{ prev.scadenza_ts }}</noscript>
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+                            <td class="azioni-cell">
+                                {% if prev.stato == 'ATTESA' %}
+                                    <div class="d-flex gap-1">
+                                        <form method="post" action="{% url 'bidding:accetta_preventivo' prev.pk %}" class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-success btn-sm">✅ Accetta</button>
+                                        </form>
+                                        <form method="post" action="{% url 'bidding:rifiuta_preventivo' prev.pk %}" class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-outline-danger btn-sm">❌ Rifiuta</button>
+                                        </form>
+                                    </div>
+                                {% elif prev.stato == 'IN_PAGAMENTO' %}
+                                    <div class="d-flex gap-1">
+                                        <a href="{% url 'bidding:conferma_pagamento' prev.pk %}" class="btn btn-primary btn-sm">💳 Paga ora</a>
+                                        <form method="post" action="{% url 'bidding:annulla_accettazione' prev.pk %}" class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-outline-secondary btn-sm">↩️ Annulla</button>
+                                        </form>
+                                    </div>
+                                {% elif prev.stato == 'ACCETTATO' %}
+                                    {% for p in richiesta.preventivi.all %}
+                                        {% if p.stato == 'ATTESA' %}
+                                            {% ifchanged %}
+                                                <a href="{% url 'bidding:rifiuta_altri' richiesta.pk %}" class="btn btn-outline-danger btn-sm">🗑️ Rifiuta altri</a>
+                                            {% endifchanged %}
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+                <p class="text-muted">Nessun preventivo ricevuto ancora.</p>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+
+<script>
+function formatCountdown(seconds) {
+    if (seconds <= 0) return '<span class="text-danger fw-bold">Scaduto</span>';
+    var d = Math.floor(seconds / 86400);
+    var h = Math.floor((seconds % 86400) / 3600);
+    var m = Math.floor((seconds % 3600) / 60);
+    var s = Math.floor(seconds % 60);
+    var parts = [];
+    if (d > 0) parts.push(d + 'g');
+    if (h > 0 || d > 0) parts.push(h + 'h');
+    if (m > 0 || h > 0 || d > 0) parts.push(m + 'm');
+    parts.push(s + 's');
+    return parts.join(' ');
+}
+
+function updateCountdowns() {
+    var now = Math.floor(Date.now() / 1000);
+    document.querySelectorAll('.countdown').forEach(function(el) {
+        var scadenza = parseInt(el.getAttribute('data-scadenza'));
+        var diff = scadenza - now;
+        el.innerHTML = formatCountdown(diff);
+        // Aggiorna badge stato e nasconde pulsanti quando scade
+        var row = el.closest('tr');
+        if (diff <= 0 && row) {
+            var statoCell = row.querySelector('td:nth-child(3)');
+            if (statoCell) {
+                statoCell.innerHTML = '<span class="badge bg-secondary">Scaduto</span>';
+            }
+            var azioniCell = row.querySelector('.azioni-cell');
+            if (azioniCell) {
+                azioniCell.innerHTML = '<span class="text-danger fw-bold">Scaduto</span>';
+            }
+        }
+    });
+}
+
+updateCountdowns();
+setInterval(updateCountdowns, 1000);
+</script>
+{% else %}
+    <div class="alert alert-info">
+        Non hai ancora inviato nessuna richiesta.
+        <a href="{% url 'bidding:crea_richiesta' %}" class="alert-link">Crea la tua prima richiesta</a>.
+    </div>
+{% endif %}
+{% endblock %}

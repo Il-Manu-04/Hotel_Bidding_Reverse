@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Modifica Profilo — Hotel Bidding{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <h1 class="mb-4">👤 Modifica profilo</h1>
+        <div class="card shadow">
+            <div class="card-body">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    <button type="submit" class="btn btn-primary w-100 mt-3">Salva modifiche</button>
+                    <a href="{% url 'bidding:dashboard_cliente' %}" class="btn btn-outline-secondary w-100 mt-2 needs-confirm">← Annulla</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modale di conferma -->
+<div class="modal fade" id="confirmModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">⚠️ Conferma</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p>Le modifiche non saranno salvate. Vuoi davvero uscire?</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No, resta qui</button>
+        <a href="#" id="confirmLink" class="btn btn-danger">Sì, esci</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+    document.querySelectorAll('.needs-confirm').forEach(function(link) {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('confirmLink').href = this.href;
+            new bootstrap.Modal(document.getElementById('confirmModal')).show();
+        });
+    });
+</script>
+{% endblock %}

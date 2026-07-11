@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Camere — {{ hotel.nome }}{% endblock %}
+
+{% block content %}
+<h1 class="mb-3">🛏️ Camere: {{ hotel.nome }}</h1>
+<a href="{% url 'hotels:miei_hotel' %}" class="btn btn-outline-secondary btn-sm mb-3">← Torna ai miei hotel</a>
+
+<div class="row">
+    <div class="col-md-5">
+        <div class="card shadow mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">➕ Aggiungi camera</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data" novalidate>
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    <button type="submit" class="btn btn-success w-100 mt-2">Aggiungi</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-7">
+        <h5>Camere esistenti ({{ camere|length }})</h5>
+        {% if camere %}
+        <div class="list-group">
+            {% for camera in camere %}
+            <div class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>{{ camera.nome }}</strong>
+                    <small class="text-muted"> — x{{ camera.capienza }} persone{% if camera.prezzo_indicativo %} · €{{
+                        camera.prezzo_indicativo }}/notte{% endif %}</small>
+                </div>
+                <div class="d-flex gap-1">
+                    <a href="{% url 'hotels:modifica_camera' camera.pk %}" class="btn btn-outline-primary btn-sm">✏️</a>
+                    <form method="post" action="{% url 'hotels:elimina_camera' camera.pk %}"
+                        class="d-inline form-eliminazione">
+                        {% csrf_token %}
+                        <button type="button" class="btn btn-outline-danger btn-sm btn-apri-modale">🗑️</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-muted">Nessuna camera configurata. Aggiungine una.</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="modal fade" id="confermaEliminazioneModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">⚠️ Conferma Eliminazione</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Sei sicuro di voler eliminare questa camera? L'operazione è irreversibile.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                <button type="button" class="btn btn-danger" id="confermaEliminaBtn">Sì, elimina</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let formDaInviare = null;
+
+    // 1. Intercetta il click su qualsiasi bottone del cestino
+    document.querySelectorAll('.btn-apri-modale').forEach(function (button) {
+        button.addEventListener('click', function (e) {
+            // Salva in memoria lo specifico form genitore del bottone cliccato
+            formDaInviare = this.closest('.form-eliminazione');
+            // Mostra il modale di Bootstrap
+            new bootstrap.Modal(document.getElementById('confermaEliminazioneModal')).show();
+        });
+    });
+
+    // 2. Quando l'utente clicca "Sì, elimina" dentro il modale
+    document.getElementById('confermaEliminaBtn').addEventListener('click', function () {
+        if (formDaInviare) {
+            formDaInviare.submit(); // Esegue il POST verso la EliminaCameraView
+        }
+    });
+</script>
+{% endblock %}

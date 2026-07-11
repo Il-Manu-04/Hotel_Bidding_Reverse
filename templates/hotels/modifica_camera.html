@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Modifica Camera — {{ camera.hotel.nome }}{% endblock %}
+
+{% block content %}
+<h1 class="mb-3">✏️ Modifica Camera</h1>
+<a href="{% url 'hotels:gestisci_camere' camera.hotel.pk %}" class="btn btn-outline-secondary btn-sm mb-3">← Torna alle camere</a>
+
+<div class="card shadow">
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data" novalidate>
+            {% csrf_token %}
+            {{ form|crispy }}
+            <button type="submit" class="btn btn-primary w-100 mt-3">Salva modifiche</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}Seleziona Hotel — Hotel Bidding{% endblock %}
+
+{% block content %}
+<h1 class="mb-3">🏨 Hotel trovati</h1>
+<p class="text-muted">
+    {% if dati.citta %}<strong>Città:</strong> {{ dati.citta }} · {% endif %}
+    {% if dati.stelle_minime %}<strong>Min. {{ dati.stelle_minime }}★</strong> · {% endif %}
+    <strong>{{ dati.data_checkin|date:"d/m/Y" }} → {{ dati.data_checkout|date:"d/m/Y" }}</strong> ·
+    <strong>{{ dati.capienza_richiesta }} ospit{{ dati.capienza_richiesta|pluralize:"e,i" }}</strong>
+    {% if dati.budget_massimo %} · max €{{ dati.budget_massimo }}/notte{% endif %}
+</p>
+{% if servizi_richiesti %}
+<p class="text-muted"><strong>Servizi richiesti:</strong>
+    {% for s in servizi_richiesti %}<span class="badge bg-secondary me-1">{{ s.nome }}</span>{% endfor %}
+</p>
+{% endif %}
+
+{% if hotels %}
+    <p>
+        <a href="{% url 'bidding:crea_richiesta' %}" class="btn btn-outline-secondary btn-sm">← Modifica filtri</a>
+    </p>
+    <form method="post" id="form-seleziona">
+        {% csrf_token %}
+        <div class="mb-3">
+            <input type="checkbox" id="seleziona-tutti" checked>
+            <label for="seleziona-tutti" class="fw-bold">Seleziona / Deseleziona tutti</label>
+        </div>
+
+        <div class="row">
+            {% for hotel in hotels %}
+            <div class="col-md-6 mb-3">
+                <div class="card h-100">
+                    {% if hotel.foto %}
+                    <img src="{{ hotel.foto.url }}" class="card-img-top" alt="{{ hotel.nome }}">
+                    {% endif %}
+                    <div class="card-body">
+                        <div class="form-check">
+                            <input class="form-check-input hotel-checkbox" type="checkbox"
+                                   name="hotels" value="{{ hotel.pk }}" id="hotel-{{ hotel.pk }}" checked>
+                            <label class="form-check-label fw-bold" for="hotel-{{ hotel.pk }}">
+                                {{ hotel.nome }}
+                            </label>
+                            <a href="{% url 'hotels:dettaglio_hotel' hotel.pk %}" target="_blank" class="btn btn-sm btn-outline-info ms-2" title="Vedi dettagli hotel in una nuova scheda">📄</a>
+                        </div>
+                        <p class="card-text mt-2 mb-1">
+                            ⭐ {{ hotel.stelle }} · 📍 {{ hotel.citta }}
+                        </p>
+                        {% if hotel.descrizione %}
+                        <p class="card-text small text-muted">{{ hotel.descrizione|truncatechars:120 }}</p>
+                        {% endif %}
+                        <p class="card-text">
+                            <small class="text-muted">
+                                {% with camere=hotel.camere.all %}
+                                    {% for c in camere %}
+                                        {{ c.nome }} (x{{ c.capienza }}){% if c.prezzo_indicativo %} — €{{ c.prezzo_indicativo }}/notte{% endif %}{% if not forloop.last %} · {% endif %}
+                                    {% empty %}
+                                        Nessuna camera configurata
+                                    {% endfor %}
+                                {% endwith %}
+                            </small>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <button type="submit" class="btn btn-success btn-lg w-100 mt-3">📩 Invia richiesta agli hotel selezionati</button>
+    </form>
+
+    <script>
+        document.getElementById('seleziona-tutti').addEventListener('change', function() {
+            var checked = this.checked;
+            document.querySelectorAll('.hotel-checkbox').forEach(function(cb) {
+                cb.checked = checked;
+            });
+        });
+    </script>
+{% else %}
+    <div class="alert alert-warning">
+        Nessun hotel trovato con i criteri specificati.
+        <a href="{% url 'bidding:crea_richiesta' %}" class="alert-link">Modifica la ricerca</a>.
+    </div>
+{% endif %}
+
+{% endblock %}

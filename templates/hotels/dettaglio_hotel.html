@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ hotel.nome }} - Hotel Bidding{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        {% if hotel.foto %}
+            <img src="{{ hotel.foto.url }}" class="img-fluid rounded mb-4" alt="{{ hotel.nome }}" style="max-height: 400px; width: 100%; object-fit: cover;">
+        {% endif %}
+        <h1>{{ hotel.nome }}</h1>
+        <p class="lead">
+            📍 {{ hotel.citta }} &nbsp;|&nbsp; ⭐ {{ hotel.stelle }} / 5
+        </p>
+        <p><strong>Gestore:</strong> {{ hotel.gestore.ragione_sociale }}</p>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0">Camere disponibili</h5>
+            </div>
+            <ul class="list-group list-group-flush">
+                {% for camera in hotel.camere.all %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ camera.nome }}</strong><br>
+                            <small class="text-muted">Capienza: {{ camera.capienza }} persone</small>
+                        </div>
+                        <span class="badge bg-primary rounded-pill">€{{ camera.prezzo_indicativo|default:"—" }}</span>
+                    </li>
+                {% empty %}
+                    <li class="list-group-item text-muted">Nessuna camera disponibile.</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        {% if user.is_authenticated and user.tipo_utente == 'CLIENTE' %}
+            <a href="#" class="btn btn-success btn-lg w-100 mt-3">Crea Richiesta</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

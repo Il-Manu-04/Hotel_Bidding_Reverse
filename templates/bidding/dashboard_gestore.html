@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard Gestore — Hotel Bidding{% endblock %}
+
+{% block content %}
+<h1 class="mb-3">📊 Dashboard Gestore</h1>
+
+{% if gestore %}
+<div class="card mb-4 border-primary">
+    <div class="card-header bg-primary text-white">
+        <strong>🧑‍💼 I tuoi dati</strong>
+    </div>
+    <div class="card-body">
+        <strong>{{ gestore.ragione_sociale }}</strong><br>
+        Partita IVA: {{ gestore.partita_iva }}<br>
+        Hotel registrati: {{ gestore.hotels.count }}
+    </div>
+</div>
+{% endif %}
+
+<div class="mb-3">
+    {% if archivio %}
+        <a href="?" class="btn btn-outline-primary btn-sm">📋 Attivi</a>
+        <strong class="ms-2 text-muted">📂 Storico</strong>
+    {% else %}
+        <strong class="text-muted">📋 Attivi</strong>
+        <a href="?archivio=1" class="btn btn-outline-secondary btn-sm ms-2">📂 Storico</a>
+    {% endif %}
+</div>
+
+<!-- SEZIONE 1: Richieste ricevute -->
+<h3 class="mb-3">📨 Richieste ricevute</h3>
+{% if richieste %}
+    <p class="text-muted">Richieste dei clienti a cui non hai ancora risposto.</p>
+    {% for richiesta in richieste %}
+    <div class="card mb-3 shadow-sm {% if richiesta.is_scaduta %}border-danger{% endif %}">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span>
+                <strong>{{ richiesta.cliente.user.get_full_name|default:richiesta.cliente.user.username }}</strong>
+                · {{ richiesta.data_checkin|date:"d/m/Y" }} → {{ richiesta.data_checkout|date:"d/m/Y" }}
+                · {{ richiesta.capienza_richiesta }} ospit{{ richiesta.capienza_richiesta|pluralize:"e,i" }}
+                {% if richiesta.budget_massimo %} · max €{{ richiesta.budget_massimo }}/notte{% endif %}
+            </span>
+            <small class="text-muted">
+                {{ richiesta.data_creazione|date:"d/m/Y H:i" }}
+                · ⏰ Rispondi entro: {{ richiesta.scadenza_richiesta|date:"d/m/Y H:i" }}
+            </small>
+        </div>
+        <div class="card-body">
+            {% if richiesta.citta_cercata or richiesta.stelle_minime or richiesta.servizi_richiesti.exists %}
+            <div class="mb-2">
+                <strong>Filtri cliente:</strong>
+                {% if richiesta.citta_cercata %}<span class="badge bg-secondary">📍 {{ richiesta.citta_cercata }}</span>{% endif %}
+                {% if richiesta.stelle_minime %}<span class="badge bg-secondary">⭐ min. {{ richiesta.stelle_minime }}</span>{% endif %}
+                {% for s in richiesta.servizi_richiesti.all %}<span class="badge bg-info">{{ s.nome }}</span>{% endfor %}
+            </div>
+            {% endif %}
+            {% if richiesta.messaggio_cliente %}
+            <div class="alert alert-light border mb-2">
+                <strong>Messaggio:</strong> "{{ richiesta.messaggio_cliente|truncatechars:200 }}"
+            </div>
+            {% endif %}
+            <div class="d-flex gap-2">
+                <a href="{% url 'bidding:crea_preventivo' richiesta.pk %}" class="btn btn-primary btn-sm">✉️ Invia preventivo</a>
+                <form method="post" action="{% url 'bidding:scarta_richiesta' richiesta.pk %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-danger btn-sm">🗑️ Scarta</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+    <div class="alert alert-info">Nessuna richiesta da mostrare.</div>
+{% endif %}
+
+<!-- SEZIONE 2: Preventivi inviati -->
+<h3 class="mb-3 mt-5">📤 Preventivi inviati</h3>
+{% if preventivi %}
+    <div class="row">
+        {% for prev in preventivi %}
+        <div class="col-md-6 mb-3">
+            <div class="card h-100 shadow-sm border
+                {% if prev.stato == 'ATTESA' %}border-warning
+                {% elif prev.stato == 'IN_PAGAMENTO' %}border-info
+                {% elif prev.stato == 'ACCETTATO' %}border-success
+                {% elif prev.stato == 'RIFIUTATO' %}border-danger
+                {% elif prev.stato == 'SCADUTO' %}border-secondary
+                {% elif prev.stato == 'INVALIDATO' %}border-warning bg-light
+                {% endif %}
+            ">
+                <div class="card-body">
+                    <h6 class="card-title">{{ prev.hotel.nome }}</h6>
+                    <p class="card-text small">
+                        <strong>Cliente:</strong> {{ prev.richiesta.cliente.user.get_full_name|default:prev.richiesta.cliente.user.username }}<br>
+                        <strong>Date:</strong> {{ prev.richiesta.data_checkin|date:"d/m/Y" }} → {{ prev.richiesta.data_checkout|date:"d/m/Y" }}<br>
+                        <strong>Prezzo:</strong> €{{ prev.prezzo_proposto }}/notte<br>
+                        <strong>Stato:</strong>
+                        {% if prev.stato == 'ATTESA' %}<span class="badge bg-warning text-dark">In attesa</span>
+                        {% elif prev.stato == 'IN_PAGAMENTO' %}<span class="badge bg-info">In pagamento</span>
+                        {% elif prev.stato == 'ACCETTATO' %}<span class="badge bg-success">Accettato ✅</span>
+                        {% elif prev.stato == 'RIFIUTATO' %}<span class="badge bg-danger">Rifiutato</span>
+                        {% elif prev.stato == 'SCADUTO' %}<span class="badge bg-secondary">Scaduto</span>
+                        {% elif prev.stato == 'INVALIDATO' %}<span class="badge bg-warning">Invalidato</span>
+                        {% endif %}
+                        {% if prev.camera_assegnata %}
+                        <br><strong>Camera:</strong> {{ prev.camera_assegnata.nome }}
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="alert alert-info">Nessun preventivo inviato.</div>
+{% endif %}
+{% endblock %}

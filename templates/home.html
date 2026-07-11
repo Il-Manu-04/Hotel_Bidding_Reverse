@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}Hotel Bidding — Reverse Bidding alberghiero{% endblock %}
+
+{% block content %}
+<div class="text-center py-5">
+    <h1 class="display-4 fw-bold">🏨 Trova l'hotel perfetto al miglior prezzo</h1>
+    <p class="lead text-muted mb-4">
+        Fissa le date, scegli i criteri, e lascia che gli hotel facciano a gara per offrirti il prezzo migliore.
+    </p>
+    <a href="{% url 'bidding:crea_richiesta' %}" class="btn btn-primary btn-lg px-5">🔍 Cerca ora</a>
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-4 text-center">
+        <h3>1️⃣ Cerchi</h3>
+        <p class="text-muted">Inserisci date, città, stelle, servizi desiderati e budget.</p>
+    </div>
+    <div class="col-md-4 text-center">
+        <h3>2️⃣ Ricevi preventivi</h3>
+        <p class="text-muted">Gli hotel che fanno al caso tuo ti inviano offerte personalizzate.</p>
+    </div>
+    <div class="col-md-4 text-center">
+        <h3>3️⃣ Scegli e paghi</h3>
+        <p class="text-muted">Accetta l'offerta migliore e conferma in un click. È l'hotel a competere per te!</p>
+    </div>
+</div>
+{% endblock %}
