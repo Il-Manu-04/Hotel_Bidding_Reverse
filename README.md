@@ -169,7 +169,7 @@ python manage.py crea_dati_test
 ```
 
 Il comando crea, tra gli altri, un utente gestore e un utente cliente già
-pronti per l'accesso:
+pronti per l'accesso (dati di testing):
 
 | Ruolo | Username | Password |
 |---|---|---|
