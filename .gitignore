@@ -37,3 +37,5 @@ Thumbs.db
 
 # VARIABILI D'AMBIENTE (Sicurezza)
 .env
+
+media/

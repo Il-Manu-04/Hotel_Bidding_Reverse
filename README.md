@@ -33,8 +33,8 @@ gli hotel selezionati restano in memoria e la richiesta viene inviata
 automaticamente subito dopo l'accesso (o la registrazione), senza doverli
 reinserire da capo.
 
-![Homepage](docs/screenshots/homepage.png)
-*Screenshot suggerito: homepage con il claim principale e i tre passaggi del funzionamento.*
+![Homepage](screenshots/homepage.png)
+*Homepage con il claim principale e i tre passaggi del funzionamento.*
 
 ### Cliente registrato
 
@@ -55,17 +55,23 @@ telefonico. Da qui può:
   preventivi ancora in attesa ricevuti per la stessa richiesta;
 - modificare i propri dati di profilo (nome, cognome, email, telefono).
 
-![Ricerca - step 1](docs/screenshots/crea_richiesta.png)
-*Screenshot suggerito: form di ricerca con i filtri compilati.*
+![Ricerca - step 1](screenshots/crea_richiesta.png)
+*Form di ricerca con i filtri compilati.*
 
-![Ricerca - step 2](docs/screenshots/seleziona_hotel.png)
-*Screenshot suggerito: lista di hotel disponibili con le caselle di selezione.*
+![Ricerca - step 2](screenshots/seleziona_hotel.png)
+*Lista di hotel disponibili con le caselle di selezione.*
 
-![Dashboard cliente](docs/screenshots/dashboard_cliente.png)
-*Screenshot suggerito: dashboard con almeno una richiesta e due preventivi in stati diversi.*
+![Dashboard cliente](screenshots/dashboard_cliente.png)
+*Dashboard con almeno una richiesta e due preventivi in stati diversi.*
 
-![Pagamento simulato](docs/screenshots/conferma_pagamento.png)
-*Screenshot suggerito: pagina di riepilogo/conferma del pagamento simulato.*
+![Pagamento simulato](screenshots/conferma_pagamento.png)
+*Pagina di riepilogo/conferma del pagamento simulato.*
+
+![Pagamento completato](screenshots/pagamento_completato.png)
+*Pagina di riepilogo/conferma del pagamento completato con nuovo stato della dashboard.*
+
+![Possibilità di rifiuto](screenshots/possibilita_rifiuto.png)
+*Possibilità di rifiuto di altri preventivi dopo aver accettato uno.*
 
 ### Gestore hotel
 
@@ -87,13 +93,13 @@ in fase di registrazione può opzionalmente creare già la sua prima struttura
   richiesta;
 - modificare i propri dati di profilo e quelli della ragione sociale.
 
-![Gestione camere](docs/screenshots/gestisci_camere.png)
+![Gestione camere](screenshots/gestisci_camere.png)
 *Screenshot suggerito: pagina di gestione camere di un hotel, con almeno due camere create.*
 
-![Dashboard gestore](docs/screenshots/dashboard_gestore.png)
+![Dashboard gestore](screenshots/dashboard_gestore.png)
 *Screenshot suggerito: dashboard gestore con richieste in arrivo.*
 
-![Crea preventivo](docs/screenshots/crea_preventivo.png)
+![Crea preventivo](screenshots/crea_preventivo.png)
 *Screenshot suggerito: form di creazione preventivo con il prezzo suggerito visibile.*
 
 ### Amministratore
@@ -115,7 +121,7 @@ opzionali tranne le date e il numero di ospiti:
   selezionati, non solo uno qualsiasi
 - **budget massimo per notte**: escluse solo le camere con un prezzo
   indicativo superiore al budget; le camere senza prezzo indicato non
-  vengono escluse a priori
+  vengono escluse a priori (gestore ha la possibilità di dichiarare un prezzo al momento del preventivo)
 - **capienza** e **date di soggiorno**: un hotel compare solo se ha almeno
   una camera con capienza sufficiente e **realmente libera** in
   quell'intervallo, calcolato controllando le sovrapposizioni con le
@@ -205,10 +211,8 @@ pipenv shell
 **Opzione B — venv + requirements.txt**
 
 ```bash
-python -m venv venv
-source venv/bin/activate        # su Windows: venv\Scripts\activate
-
-pip install -r requirements.txt
+pipenv install -r requirements.txt
+pipenv shell
 ```
 
 ### 3. Database
