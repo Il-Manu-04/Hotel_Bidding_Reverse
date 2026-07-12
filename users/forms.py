@@ -130,6 +130,9 @@ class ModificaProfiloGestoreForm(forms.ModelForm):
         piva = self.cleaned_data.get('partita_iva')
         if not piva.isdigit() or len(piva) != 11:
             raise forms.ValidationError('La partita IVA deve contenere esattamente 11 cifre.')
+        #gestisce la modifica escludendo se stesso dall'eccezione
+        if GestoreProfile.objects.filter(partita_iva=piva).exclude(user=self.instance).exists():
+            raise forms.ValidationError('Questa partita IVA è già registrata.')
         return piva
 
     def save(self, commit=True):

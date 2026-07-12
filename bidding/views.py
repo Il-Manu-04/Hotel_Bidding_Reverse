@@ -425,7 +425,7 @@ class ScartaRichiestaView(LoginRequiredMixin, UserPassesTestMixin, View):
 
 
 # ===========================================================================
-# FASE 4 — AccettaPreventivoView
+# AccettaPreventivoView
 # ===========================================================================
 class AccettaPreventivoView(LoginRequiredMixin, UserPassesTestMixin, View):
     def test_func(self):

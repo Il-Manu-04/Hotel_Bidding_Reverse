@@ -51,6 +51,7 @@ class ModificaProfiloClienteView(LoginRequiredMixin, UserPassesTestMixin, Update
     def test_func(self):
         return self.request.user.tipo_utente == 'CLIENTE'
 
+    #modifica solo se stesso evitando id arbitrari nell'url
     def get_object(self, queryset=None):
         return self.request.user
 

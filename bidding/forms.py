@@ -4,7 +4,7 @@ from hotels.models import Hotel, Servizio
 
 
 # ===========================================================================
-# Form per la creazione della richiesta (Fase 3 – step 1)
+# Form per la creazione della richiesta
 # ===========================================================================
 class RichiestaForm(forms.Form):
     data_checkin = forms.DateField(label="Check-in", widget=forms.DateInput(attrs={'type': 'date'}))
@@ -27,7 +27,7 @@ class RichiestaForm(forms.Form):
 
 
 # ===========================================================================
-# Form per la creazione del preventivo (Fase 4 – step risposta gestore)
+# Form per la creazione del preventivo
 # ===========================================================================
 class CreaPreventivoForm(forms.Form):
     hotel = forms.ModelChoiceField(queryset=Hotel.objects.none(), label="Hotel", empty_label="Seleziona un hotel")
