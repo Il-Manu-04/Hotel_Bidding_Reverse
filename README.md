@@ -192,8 +192,8 @@ pronti per l'accesso (dati di testing):
 ### 1. Clonazione
 
 ```bash
-git clone <URL_DELLA_REPO>
-cd <NOME_DELLA_CARTELLA>
+git clone https://github.com/Il-Manu-04/Hotel_Bidding_Reverse.git
+cd Hotel_Bidding_Reverse
 ```
 
 ### 2. Creazione dell'ambiente — due modalità equivalenti
