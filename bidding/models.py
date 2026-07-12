@@ -2,7 +2,7 @@ from django.db import models
 from django.core.validators import MinValueValidator
 from django.conf import settings
 from django.utils import timezone
-from datetime import timedelta
+from datetime import timedelta, date
 from users.models import ClienteProfile
 from hotels.models import Hotel, Camera, Servizio
 
@@ -48,7 +48,6 @@ class Richiesta(models.Model):
     @property
     def is_passata(self):
         """True se il check-out è già passato (soggiorno concluso)."""
-        from datetime import date
         return date.today() > self.data_checkout
 
 

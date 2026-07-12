@@ -1,4 +1,8 @@
 import uuid
+import calendar
+from datetime import date, timedelta
+from decimal import Decimal
+from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 from django.urls import reverse
@@ -6,7 +10,7 @@ from django.views.generic import FormView, View, TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib import messages
 from django.http import HttpResponseForbidden
-from django.db.models import Q, Exists, OuterRef
+from django.db.models import Q, Exists, OuterRef, Min
 from django.db import transaction
 from .models import Richiesta, Preventivo
 from .forms import RichiestaForm, CreaPreventivoForm
@@ -49,7 +53,6 @@ class CreaRichiestaView(FormView):
         dati = self.request.session.get('dati_richiesta')
         if not dati:
             return {}
-        from datetime import date
         initial = {
             'data_checkin': dati.get('data_checkin'),
             'data_checkout': dati.get('data_checkout'),
@@ -92,8 +95,6 @@ class SelezionaHotelView(View):
         if not raw:
             return None
         dati = dict(raw)  # copia per non modificare la sessione originale
-        from datetime import date
-        from decimal import Decimal
         if isinstance(dati['data_checkin'], str):
             dati['data_checkin'] = date.fromisoformat(dati['data_checkin'])
         if isinstance(dati['data_checkout'], str):
@@ -192,8 +193,6 @@ class CompletaRichiestaDopoLoginView(LoginRequiredMixin, UserPassesTestMixin, Vi
         if not dati or not hotel_ids_str:
             messages.error(request, "Sessione scaduta.")
             return redirect('bidding:crea_richiesta')
-        from datetime import date
-        from decimal import Decimal
         hotel_ids = [int(pk) for pk in hotel_ids_str]
         with transaction.atomic():
             r = Richiesta.objects.create(
@@ -209,6 +208,7 @@ class CompletaRichiestaDopoLoginView(LoginRequiredMixin, UserPassesTestMixin, Vi
             r.hotels_contattati.set(hotel_ids)
             if dati.get('servizi_ids'):
                 r.servizi_richiesti.set([int(sid) for sid in dati['servizi_ids']])
+        #per evitare duplicazioni di richiesta in caso di reload.
         request.session.pop('dati_richiesta', None)
         request.session.pop('hotel_ids_pending', None)
         messages.success(request, "Richiesta inviata con successo!")
@@ -230,7 +230,6 @@ class DashboardGestoreView(LoginRequiredMixin, UserPassesTestMixin, TemplateView
         hotel_ids = gestore.hotels.values_list('id', flat=True)
         show_archive = self.request.GET.get('archivio') == '1'
 
-        from datetime import timedelta as td
         # Richieste dove almeno un hotel del gestore contattato NON ha ancora risposto
         hotel_non_risposto = Hotel.objects.filter(
             gestore=gestore,
@@ -250,9 +249,9 @@ class DashboardGestoreView(LoginRequiredMixin, UserPassesTestMixin, TemplateView
         else:
             richieste = list(richieste_qs)
         for r in richieste:
-            r.scadenza_richiesta = r.data_creazione + td(minutes=r.durata_richiesta)
+            r.scadenza_richiesta = r.data_creazione + timedelta(minutes=r.durata_richiesta)
 
-        # Preventivi inviati dal gestore
+        # Preventivi inviati dal gestore con left outer join
         preventivi_qs = Preventivo.objects.filter(hotel__gestore=gestore).select_related('richiesta__cliente__user', 'hotel', 'camera_assegnata').order_by('-timestamp_creazione')
 
         # Controllo proattivo: marca scaduti i preventivi ATTESA che hanno superato la validità
@@ -299,10 +298,6 @@ class DashboardClienteView(LoginRequiredMixin, UserPassesTestMixin, TemplateView
         return False
 
     def get_context_data(self, **kwargs):
-        from datetime import timedelta
-        from django.conf import settings
-        import calendar
-
         ctx = super().get_context_data(**kwargs)
         cliente = self.request.user.cliente_profile
         now = timezone.now()
@@ -314,9 +309,8 @@ class DashboardClienteView(LoginRequiredMixin, UserPassesTestMixin, TemplateView
         else:
             richieste = richieste_qs
 
-        from datetime import timedelta as td
         for richiesta in richieste:
-            richiesta.scadenza_richiesta = richiesta.data_creazione + td(minutes=richiesta.durata_richiesta)
+            richiesta.scadenza_richiesta = richiesta.data_creazione + timedelta(minutes=richiesta.durata_richiesta)
             for prev in richiesta.preventivi.all():
                 if prev.stato == Preventivo.Stato.ATTESA:
                     # Controllo proattivo: segna scaduto se necessario
@@ -371,7 +365,6 @@ class CreaPreventivoView(LoginRequiredMixin, UserPassesTestMixin, FormView):
         ctx['richiesta'] = richiesta
 
         # Prezzi suggeriti: per ogni hotel, la camera più economica che rispetta la capienza
-        from django.db.models import Min
         prezzi_suggeriti = {}
         for hotel in ctx['form'].fields['hotel'].queryset:
             camera = (
