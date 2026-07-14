@@ -242,6 +242,22 @@ class AccettaPreventivoViewTests(TestCase):
         prev.refresh_from_db()
         self.assertEqual(prev.stato, Preventivo.Stato.SCADUTO)
 
+    def test_caso_limite_idor_cliente_altrui_forbidden(self):
+        """Un cliente non può accettare il preventivo di un altro cliente (IDOR protection)."""
+        prev = Preventivo.objects.create(
+            richiesta=self.richiesta, hotel=self.hotel,
+            stato=Preventivo.Stato.ATTESA, prezzo_proposto=100.00,
+        )
+        # Logga come cliente2 (un altro utente)
+        self.client.login(username='cliente2', password='testpass123!')
+        url = reverse('bidding:accetta_preventivo', args=[prev.pk])
+        response = self.client.post(url)
+        # Deve ricevere 403 Forbidden
+        self.assertEqual(response.status_code, 403)
+        # Il preventivo NON deve essere stato modificato
+        prev.refresh_from_db()
+        self.assertEqual(prev.stato, Preventivo.Stato.ATTESA)
+
 
 class AnnullaAccettazioneViewTests(TestCase):
     def setUp(self):
